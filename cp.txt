@@ -1,0 +1,140 @@
+#include<stdio.h> 
+#include<stdlib.h> 
+#include<sys/wait.h> 
+#include<unistd.h> 
+ 
+int main() 
+{ 
+    printf("\n1) Fork "); 
+    printf("\n2) Wait "); 
+    printf("\n3) Exec(ls)"); 
+    printf("\n4) cp ");    
+    printf("\n5) ls "); 
+    printf("\n6) grep ");   // Added option for grep 
+    printf("\n7) Exit ");    // Exit is now after grep 
+    printf("\nEnter Choice\n"); 
+ 
+    int n; 
+    scanf("%d", &n); 
+ 
+    switch (n) 
+    { 
+ 
+    case 1: 
+        { 
+            int x = fork(); 
+            if (x == 0) 
+            { 
+                printf(" \nchild process %d parent process %d", x, getppid()); 
+            } 
+            else 
+            { 
+                printf(" \nparent process %d child process %d", getpid(), x); 
+            } 
+        } 
+        break; 
+ 
+    case 2: 
+        { 
+            int x = fork(); 
+            if (x == 0) 
+            { 
+                printf(" \nchild process %d parent process %d", x, getppid()); 
+                exit(0); 
+            } 
+            else 
+            { 
+                wait(NULL); 
+                printf(" \nparent process %d child process %d", getpid(), x); 
+            } 
+        } 
+        break; 
+ 
+    case 3: 
+        { 
+            int x = fork(); 
+            if (x == 0) 
+            { 
+                printf(" \nchild process %d parent process %d", x, getppid()); 
+                execlp("/bin/ls", "ls", NULL); 
+                exit(0); 
+            } 
+            else 
+            { 
+                x = wait(NULL); 
+                printf(" \nparent process %d child process %d", getpid(), x); 
+            } 
+        } 
+        break; 
+ 
+    case 4: 
+        { 
+            char fs[100]; 
+            FILE *fptr; 
+            fptr = fopen("source.txt", "r+"); 
+ 
+            if (fptr) 
+            { 
+                FILE *fn = fopen("destination.txt", "w"); 
+                while (fscanf(fptr, "%s", fs) != EOF) 
+                { 
+                    fprintf(fn, "%s\n", fs); 
+                } 
+                fclose(fn); 
+            } 
+            else 
+            { 
+                printf("\nOpps......File does not exist or failed to open..."); 
+            } 
+            fclose(fptr); 
+        } 
+        break; 
+ 
+    case 5: 
+        { 
+            int x = fork(); 
+            if (x == 0) 
+            { 
+                execlp("ls", "ls", NULL); 
+                exit(0); 
+            } 
+            else 
+            { 
+                wait(NULL); 
+            } 
+        } 
+        break; 
+ 
+    case 6: 
+        { 
+            char pattern[100], filename[100]; 
+            printf("Enter the pattern to search: "); 
+            scanf("%s", pattern); 
+            printf("Enter the filename to search within: "); 
+            scanf("%s", filename); 
+ 
+            int x = fork(); 
+            if (x == 0) 
+            { 
+                execlp("grep", "grep", pattern, filename, NULL); 
+                exit(0); 
+            } 
+            else 
+            { 
+                wait(NULL); 
+            } 
+        } 
+        break; 
+ 
+    case 7: 
+        { 
+            printf("Exiting..... \n\a"); 
+            exit(0); 
+        } 
+        break; 
+ 
+    default: 
+        printf("Enter valid choice...."); 
+    } 
+    return 0; 
+} 

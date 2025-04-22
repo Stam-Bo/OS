@@ -1,0 +1,116 @@
+#include <iostream>
+using namespace std;
+
+const int MAX = 100;
+
+void resetAllocation(int allocation[], int nBlocks) {
+    for (int i = 0; i < nBlocks; i++)
+        allocation[i] = -1;
+}
+
+void firstFit(int memory[], int nBlocks, int process[], int nProcesses, int allocation[]) {
+    for (int i = 0; i < nProcesses; i++) {
+        for (int j = 0; j < nBlocks; j++) {
+            if (memory[j] >= process[i] && allocation[j] == -1) {
+                allocation[j] = i;
+                break;
+            }
+        }
+    }
+}
+
+void bestFit(int memory[], int nBlocks, int process[], int nProcesses, int allocation[]) {
+    for (int i = 0; i < nProcesses; i++) {
+        int bestIdx = -1;
+        for (int j = 0; j < nBlocks; j++) {
+            if (memory[j] >= process[i] && allocation[j] == -1) {
+                if (bestIdx == -1 || memory[j] < memory[bestIdx])
+                    bestIdx = j;
+            }
+        }
+        if (bestIdx != -1)
+            allocation[bestIdx] = i;
+    }
+}
+
+void worstFit(int memory[], int nBlocks, int process[], int nProcesses, int allocation[]) {
+    for (int i = 0; i < nProcesses; i++) {
+        int worstIdx = -1;
+        for (int j = 0; j < nBlocks; j++) {
+            if (memory[j] >= process[i] && allocation[j] == -1) {
+                if (worstIdx == -1 || memory[j] > memory[worstIdx])
+                    worstIdx = j;
+            }
+        }
+        if (worstIdx != -1)
+            allocation[worstIdx] = i;
+    }
+}
+
+void nextFit(int memory[], int nBlocks, int process[], int nProcesses, int allocation[]) {
+    int lastPos = 0;
+    for (int i = 0; i < nProcesses; i++) {
+        int count = 0;
+        while (count < nBlocks) {
+            int idx = (lastPos + count) % nBlocks;
+            if (memory[idx] >= process[i] && allocation[idx] == -1) {
+                allocation[idx] = i;
+                lastPos = (idx + 1) % nBlocks;
+                break;
+            }
+            count++;
+        }
+    }
+}
+
+void printAllocation(int allocation[], int memory[], int nBlocks) {
+    cout << "Block\tSize\tProcess\n";
+    for (int i = 0; i < nBlocks; i++) {
+        cout << i + 1 << "\t" << memory[i] << "\t";
+        if (allocation[i] == -1)
+            cout << "Free";
+        else
+            cout << "P" << allocation[i] + 1;
+        cout << "\n";
+    }
+    cout << "\n";
+}
+
+int main() {
+    int nBlocks, nProcesses;
+    int memory[MAX], process[MAX], allocation[MAX];
+
+    cout << "Enter number of memory blocks: ";
+    cin >> nBlocks;
+    cout << "Enter sizes of memory blocks:\n";
+    for (int i = 0; i < nBlocks; i++)
+        cin >> memory[i];
+
+    cout << "Enter number of processes: ";
+    cin >> nProcesses;
+    cout << "Enter sizes of processes:\n";
+    for (int i = 0; i < nProcesses; i++)
+        cin >> process[i];
+
+    cout << "\n--- First Fit Allocation ---\n";
+    resetAllocation(allocation, nBlocks);
+    firstFit(memory, nBlocks, process, nProcesses, allocation);
+    printAllocation(allocation, memory, nBlocks);
+
+    cout << "--- Best Fit Allocation ---\n";
+    resetAllocation(allocation, nBlocks);
+    bestFit(memory, nBlocks, process, nProcesses, allocation);
+    printAllocation(allocation, memory, nBlocks);
+
+    cout << "--- Worst Fit Allocation ---\n";
+    resetAllocation(allocation, nBlocks);
+    worstFit(memory, nBlocks, process, nProcesses, allocation);
+    printAllocation(allocation, memory, nBlocks);
+
+    cout << "--- Next Fit Allocation ---\n";
+    resetAllocation(allocation, nBlocks);
+    nextFit(memory, nBlocks, process, nProcesses, allocation);
+    printAllocation(allocation, memory, nBlocks);
+
+    return 0;
+}

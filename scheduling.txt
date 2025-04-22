@@ -1,0 +1,155 @@
+#include <iostream>
+using namespace std;
+
+const int MAX = 100;
+
+void fcfs(int n, int bt[], int at[]) {
+    int wt[MAX], tat[MAX], ct[MAX], p[MAX];
+
+    for (int i = 0; i < n; i++) p[i] = i;
+
+    // Sort by Arrival Time
+    for (int i = 0; i < n-1; i++)
+        for (int j = i+1; j < n; j++)
+            if (at[p[i]] > at[p[j]])
+                swap(p[i], p[j]);
+
+    int time = 0;
+    for (int i = 0; i < n; i++) {
+        int idx = p[i];
+        if (time < at[idx]) time = at[idx];
+        wt[idx] = time - at[idx];
+        time += bt[idx];
+        tat[idx] = bt[idx] + wt[idx];
+        ct[idx] = time;
+    }
+
+    cout << "\nFCFS Scheduling:\n";
+    cout << "P\tAT\tBT\tWT\tTAT\n";
+    for (int i = 0; i < n; i++)
+        cout << i+1 << "\t" << at[i] << "\t" << bt[i] << "\t" << wt[i] << "\t" << tat[i] << endl;
+}
+
+void sjf(int n, int bt[], int at[]) {
+    int completed = 0, time = 0, wt[MAX] = {0}, tat[MAX] = {0}, p[MAX], done[MAX] = {0};
+    
+    cout << "\nSJF Scheduling:\n";
+    cout << "P\tAT\tBT\tWT\tTAT\n";
+
+    while (completed < n) {
+        int idx = -1, min_bt = 1e9;
+
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= time && bt[i] < min_bt) {
+                min_bt = bt[i];
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            wt[idx] = time - at[idx];
+            time += bt[idx];
+            tat[idx] = wt[idx] + bt[idx];
+            done[idx] = 1;
+            completed++;
+        } else {
+            time++;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        cout << i+1 << "\t" << at[i] << "\t" << bt[i] << "\t" << wt[i] << "\t" << tat[i] << endl;
+}
+
+void roundRobin(int n, int bt[], int at[], int quantum) {
+    int rt[MAX], wt[MAX] = {0}, tat[MAX] = {0}, rem[MAX], time = 0, complete = 0;
+    bool done[MAX] = {0};
+    for (int i = 0; i < n; i++) {
+        rt[i] = bt[i];
+        rem[i] = bt[i];
+    }
+
+    cout << "\nRound Robin Scheduling:\n";
+    cout << "P\tAT\tBT\tWT\tTAT\n";
+
+    while (complete < n) {
+        bool executed = false;
+        for (int i = 0; i < n; i++) {
+            if (at[i] <= time && rem[i] > 0) {
+                executed = true;
+                if (rem[i] > quantum) {
+                    time += quantum;
+                    rem[i] -= quantum;
+                } else {
+                    time += rem[i];
+                    wt[i] = time - bt[i] - at[i];
+                    tat[i] = wt[i] + bt[i];
+                    rem[i] = 0;
+                    complete++;
+                }
+            }
+        }
+        if (!executed) time++;
+    }
+
+    for (int i = 0; i < n; i++)
+        cout << i+1 << "\t" << at[i] << "\t" << bt[i] << "\t" << wt[i] << "\t" << tat[i] << endl;
+}
+
+void priorityScheduling(int n, int bt[], int at[], int pri[]) {
+    int completed = 0, time = 0, wt[MAX] = {0}, tat[MAX] = {0}, done[MAX] = {0};
+
+    cout << "\nPriority Scheduling:\n";
+    cout << "P\tAT\tBT\tPri\tWT\tTAT\n";
+
+    while (completed < n) {
+        int idx = -1, highest = 1e9;
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= time && pri[i] < highest) {
+                highest = pri[i];
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            wt[idx] = time - at[idx];
+            time += bt[idx];
+            tat[idx] = wt[idx] + bt[idx];
+            done[idx] = 1;
+            completed++;
+        } else {
+            time++;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        cout << i+1 << "\t" << at[i] << "\t" << bt[i] << "\t" << pri[i] << "\t" << wt[i] << "\t" << tat[i] << endl;
+}
+
+int main() {
+    int n, bt[MAX], at[MAX], pri[MAX], quantum;
+
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter Arrival Time and Burst Time for process " << i+1 << ": ";
+        cin >> at[i] >> bt[i];
+    }
+
+    cout << "Enter Priority for each process (lower = higher priority):\n";
+    for (int i = 0; i < n; i++) {
+        cout << "Priority for process " << i+1 << ": ";
+        cin >> pri[i];
+    }
+
+    cout << "Enter Time Quantum for Round Robin: ";
+    cin >> quantum;
+
+    fcfs(n, bt, at);
+    sjf(n, bt, at);
+    roundRobin(n, bt, at, quantum);
+    priorityScheduling(n, bt, at, pri);
+
+    return 0;
+}
